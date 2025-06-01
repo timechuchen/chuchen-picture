@@ -15,6 +15,7 @@
           mode="horizontal"
           :items="menus"
           @click="doMenuClick"
+          :disabled="disabled"
         />
       </a-col>
       <!-- 用户信息展示栏 -->
@@ -49,7 +50,7 @@
 import { computed, h, onMounted, ref } from 'vue'
 import { type MenuProps, message } from 'ant-design-vue'
 import { HomeOutlined, LogoutOutlined } from '@ant-design/icons-vue'
-import { useRouter } from 'vue-router'
+import { type RouteRecordRaw, useRouter } from 'vue-router'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import { userLogoutUsingPost } from '@/api/userController.ts'
 import checkAccess from '@/asccess/checkAccess.ts'
@@ -71,9 +72,20 @@ const originMenus = [
     title: '用户管理',
   },
   {
+    key: '/add_picture',
+    label: '创建图片',
+    title: '创建图片',
+  },
+  {
+    key: '/admin/pictureManage',
+    label: '图片管理',
+    title: '图片管理',
+  },
+  {
     key: 'others',
     label: h('a', { href: 'https://github.com/timechuchen', target: '_blank' }, '学习编程'),
     title: '学习编程',
+    disabled: true,
   },
 ]
 
@@ -112,7 +124,6 @@ const filterMenus = (menus = [] as MenuProps['items']) => {
 const menus = computed(() => {
   return filterMenus(originMenus)
 })
-
 
 // 导航栏刷新高亮显示
 const current = ref<string[]>([])
