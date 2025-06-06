@@ -3,8 +3,15 @@
     <h2 style="margin-bottom: 16px; text-align: center">
       {{ route.query?.id ? '修改图片' : '创建图片' }}
     </h2>
-    <!-- 图片上传组件 -->
-    <PictureUpload :picture="picture" :on-success="onSuccess" />
+    <!-- 选择上传方式 -->
+    <a-tabs v-model:activeKey="uploadType">
+      <a-tab-pane key="file" tab="文件上传">
+        <PictureUpload :picture="picture" :onSuccess="onSuccess" />
+      </a-tab-pane>
+      <a-tab-pane key="url" tab="URL 上传" force-render>
+        <UrlPictureUpload :picture="picture" :onSuccess="onSuccess" />
+      </a-tab-pane>
+    </a-tabs>
     <!-- 图片信息表单 -->
     <a-form
       v-if="picture"
@@ -53,17 +60,16 @@
 <script setup lang="ts">
 import PictureUpload from '@/components/PictureUpload.vue'
 import { onMounted, reactive, ref } from 'vue'
-import {
-  editPictureUsingPost,
-  getPictureVoByIdUsingGet,
-} from '@/api/pictureController.ts'
+import { editPictureUsingPost, getPictureVoByIdUsingGet } from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
 import { useRoute, useRouter } from 'vue-router'
 import { tagCategoryOptionsStore } from '@/stores/classification.ts'
+import UrlPictureUpload from '@/components/UrlPictureUpload.vue'
 
 const route = useRoute()
 const router = useRouter()
 const picture = ref<API.PictureVO>()
+const uploadType = ref<'file' | 'url'>('file')
 const pictureForm = reactive<API.PictureEditRequest>({})
 
 /**

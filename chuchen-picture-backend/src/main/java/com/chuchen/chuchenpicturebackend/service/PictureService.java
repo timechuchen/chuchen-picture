@@ -3,6 +3,8 @@ package com.chuchen.chuchenpicturebackend.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chuchen.chuchenpicturebackend.model.dto.picture.PictureQueryRequest;
+import com.chuchen.chuchenpicturebackend.model.dto.picture.PictureReviewRequest;
+import com.chuchen.chuchenpicturebackend.model.dto.picture.PictureUploadByBatchRequest;
 import com.chuchen.chuchenpicturebackend.model.dto.picture.PictureUploadRequest;
 import com.chuchen.chuchenpicturebackend.model.entity.Picture;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -28,12 +30,12 @@ public interface PictureService extends IService<Picture> {
     /**
      * 上传图片
      *
-     * @param multipartFile 要上传的图片
+     * @param inputSource 要上传的图片输入源（本地文件或者 url 地址）
      * @param pictureUploadRequest 图片上传请的额外信息
      * @param loginUser 当前用户
      * @return 图片
      */
-    PictureVO uploadPicture(MultipartFile multipartFile,
+    PictureVO uploadPicture(Object inputSource,
                             PictureUploadRequest pictureUploadRequest,
                             User loginUser);
 
@@ -53,4 +55,27 @@ public interface PictureService extends IService<Picture> {
      * 数据脱敏（分页）
      */
     Page<PictureVO> getPictureVOPage(Page<Picture> picturePage, HttpServletRequest request);
+
+    /**
+     * 图片审核
+     *
+     * @param pictureReviewRequest 图片审核请求
+     * @param loginUser 当前用户
+     */
+    void doPictureReview(PictureReviewRequest pictureReviewRequest, User loginUser);
+
+    /**
+     * 填充审核参数
+     * @param picture 图片
+     * @param loginUser 当前用户
+     */
+    void fillReviewParams(Picture picture, User loginUser);
+
+    /**
+     * 批量上传图片
+     * @param pictureUploadByBatchRequest 图片上传请求
+     * @param loginUser 当前用户
+     * @return 成功的图片数量
+     */
+    Integer uploadPictureByBatch(PictureUploadByBatchRequest pictureUploadByBatchRequest, User loginUser);
 }

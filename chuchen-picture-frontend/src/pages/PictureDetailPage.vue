@@ -61,6 +61,12 @@
                 <DownOutlined />
               </template>
             </a-button>
+            <div v-if="isAdmin">
+              <a-button danger @click="() => {open = true}">拒绝展示</a-button>
+              <a-modal :mask="false" v-model:open="open" title="拒绝原因" @ok="handleReview()">
+                <a-input v-model:value="inputReviewMessage" placeholder="请输入拒绝原因" />
+              </a-modal>
+            </div>
             <a-button v-if="canEdit" type="default" @click="doEdit">
               编辑
               <template #icon>
@@ -93,12 +99,13 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { deletePictureUsingPost, getPictureVoByIdUsingGet } from '@/api/pictureController.ts'
+import { deletePictureUsingPost, doPictureReviewUsingPost, getPictureVoByIdUsingGet } from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
 import { EditOutlined, DeleteOutlined, DownOutlined } from '@ant-design/icons-vue'
 import { downloadImage, formatSize } from '@/utils'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import router from '@/router'
+import { PIC_REVIEW_STATUS_ENUM } from '@/constants/picture.ts'
 
 const props = defineProps<{
   id: string | number
@@ -124,6 +131,7 @@ const fetchPictureDetail = async () => {
   }
 }
 
+const isAdmin = ref<boolean>(false)
 const loginUserStore = useLoginUserStore()
 // 是否具有编辑权限
 const canEdit = computed(() => {
@@ -132,6 +140,7 @@ const canEdit = computed(() => {
   if (!loginUser.id) {
     return false
   }
+  isAdmin.value = loginUser.userRole === 'admin'
   // 仅本人或管理员可编辑
   const user = picture.value.user || {}
   return loginUser.id === user.id || loginUser.userRole === 'admin'
@@ -160,6 +169,28 @@ const doDelete = async () => {
 const doDownload = () => {
   downloadImage(picture.value.url)
 }
+
+const open = ref<boolean>(false)
+const inputReviewMessage = ref<string>('审核拒绝')
+const handleReview = async () => {
+  const res = await doPictureReviewUsingPost({
+    id: picture.value.id,
+    reviewStatus: PIC_REVIEW_STATUS_ENUM.REJECT,
+    reviewMessage: inputReviewMessage.value
+  })
+  if (res.data.code === 0) {
+    message.success('图片拒绝展示成功')
+    // 跳转路由
+    router.push({
+      path: '/',
+      isReplace: true
+    }).then()
+  } else {
+    message.error('图片拒绝展示失败：' + res.data.message)
+  }
+  open.value = false
+}
+
 
 onMounted(() => {
   fetchPictureDetail()
