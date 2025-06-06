@@ -28,62 +28,33 @@
         </a-checkable-tag>
       </a-space>
     </div>
-
-    <!-- 图片列表 -->
-    <a-list
-      :grid="{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4, xl: 5, xxl: 6 }"
-      :data-source="dataList"
-      :pagination="pagination"
-      :loading="loading"
-    >
-      <template #renderItem="{ item: picture }">
-        <a-list-item style="padding: 0">
-          <!-- 单张图片 -->
-          <a-card hoverable @click="doClickPicture(picture)">
-            <template #cover>
-              <img
-                style="height: 180px; object-fit: cover"
-                :alt="picture.name"
-                :src="picture.url"
-              />
-            </template>
-            <a-card-meta :title="picture.name">
-              <template #description>
-                <a-flex>
-                  <a-tag color="green">
-                    {{ picture.category ?? '默认' }}
-                  </a-tag>
-                  <a-tag v-for="tag in picture.tags" :key="tag">
-                    {{ tag }}
-                  </a-tag>
-                </a-flex>
-              </template>
-            </a-card-meta>
-          </a-card>
-        </a-list-item>
-      </template>
-    </a-list>
+    <PictureHome
+      v-if="dataList.length > 0"
+      :picture-list="dataList"
+      :do-click-picture="doClickPicture"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
-import {
-  listPictureVoByPageUsingPost,
-} from '@/api/pictureController.ts'
-import { message } from 'ant-design-vue'
+import { listPictureVoByPageUsingPost } from '@/api/pictureController.ts'
+import { Empty, message } from 'ant-design-vue'
 import { tagCategoryOptionsStore } from '@/stores/classification.ts'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import PictureHome from '@/components/PictureHome.vue'
 
 // 定义数据
 const loading = ref<boolean>(true)
 const dataList = ref<API.Picture[]>([])
 const total = ref<number>(0)
 
+const route = useRoute()
+
 // 索搜条件
 const searchParams = reactive<API.PictureQueryRequest>({
   current: 1,
-  pageSize: 12,
+  pageSize: 20,
   sortField: 'createTime',
   sortOrder: 'descend',
 })
@@ -103,6 +74,7 @@ const pagination = computed(() => {
 })
 
 const doSearch = () => {
+  router.push({ query: { category: selectedCategory.value } });
   // 重置搜索条件
   searchParams.current = 1
   fetchData()
@@ -143,12 +115,23 @@ const fetchData = async () => {
 const router = useRouter()
 const doClickPicture = (picture: API.PictureVO) => {
   router.push({
-    path: `/picture/${picture.id}`
+    path: `/picture/${picture.id}`,
   })
 }
 
 // 页面加载的时候获取一次数据
 onMounted(() => {
+  const category = route.query?.category
+  if (category) {
+    selectedCategory.value = category
+  }
+  // const tags = route.query?.tags
+  // if (tags) {
+  //   const tagList = tags.split(',')
+  //   tagList.forEach((tag, index) => {
+  //     selectedTagList.value[index] = tag
+  //   })
+  // }
   fetchData()
 })
 </script>

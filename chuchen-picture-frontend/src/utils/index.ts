@@ -22,3 +22,14 @@ export function downloadImage(url?: string, fileName?: string) {
   }
   saveAs(url, fileName)
 }
+
+// region 拖拽图片
+/**
+ * 处理拖拽图片
+ *
+ * 需要用在 <div> 元素上，并设置 draggable="true"</div>
+ * @param event
+ */
+export function handleDragStart(event) {
+  event.preventDefault() // 阻止默认拖拽行为
+}
