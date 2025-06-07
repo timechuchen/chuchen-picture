@@ -14,7 +14,7 @@
               @mouseenter="isMaskVisible[index] = true"
               @mouseleave="isMaskVisible[index] = false"
             >
-              <img :alt="item.name" :src="item.url" />
+              <img :alt="item.name" :src="item.thumbnailUrl ??item.url " />
               <div class="mask-layer bottom-contain" :class="{ visible: isMaskVisible[index] }">
                 <span style="font-size: small; font-weight: 400; color: #adffff">{{ item.picWidth}} x {{ item.picHeight}}</span>
               </div>

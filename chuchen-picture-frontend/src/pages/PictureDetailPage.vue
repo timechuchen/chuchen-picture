@@ -55,7 +55,7 @@
           </a-descriptions>
           <!-- 图片操作 -->
           <a-space wrap>
-            <a-button type="default" @click="doDownload">
+            <a-button type="primary" @click="doDownload">
               免费下载
               <template #icon>
                 <DownOutlined />

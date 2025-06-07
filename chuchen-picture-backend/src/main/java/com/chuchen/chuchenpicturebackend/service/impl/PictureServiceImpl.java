@@ -3,15 +3,19 @@ package com.chuchen.chuchenpicturebackend.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjUtil;
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.chuchen.chuchenpicturebackend.common.ResultUtils;
+import com.chuchen.chuchenpicturebackend.constant.CacheKeyConstant;
 import com.chuchen.chuchenpicturebackend.exception.BusinessException;
 import com.chuchen.chuchenpicturebackend.exception.ErrorCode;
 import com.chuchen.chuchenpicturebackend.exception.ThrowUtils;
+import com.chuchen.chuchenpicturebackend.manager.CosManager;
 import com.chuchen.chuchenpicturebackend.manager.upload.FilePictureUpload;
 import com.chuchen.chuchenpicturebackend.manager.upload.PictureUploadTemplate;
 import com.chuchen.chuchenpicturebackend.manager.upload.UrlPictureUpload;
@@ -28,12 +32,19 @@ import com.chuchen.chuchenpicturebackend.model.vo.UserVO;
 import com.chuchen.chuchenpicturebackend.service.PictureService;
 import com.chuchen.chuchenpicturebackend.mapper.PictureMapper;
 import com.chuchen.chuchenpicturebackend.service.UserService;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.qcloud.cos.COSClient;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -42,6 +53,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -60,6 +72,12 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
     private UrlPictureUpload urlPictureUpload;
     @Resource
     UserService userService;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+    @Resource
+    private Cache<String, String> caffeineCache;
+    @Resource
+    private CosManager cosManager;
 
     @Override
     public void validPicture(Picture picture) {
@@ -108,6 +126,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         // 构造要入库的图片信息
         Picture picture = new Picture();
         picture.setUrl(uploadPictureResult.getUrl());
+        picture.setThumbnailUrl(uploadPictureResult.getThumbnailUrl());
         String picName = uploadPictureResult.getPicName();
         if(pictureUploadRequest != null && StrUtil.isNotBlank(pictureUploadRequest.getPicName())) {
             picName = pictureUploadRequest.getPicName();
@@ -229,6 +248,48 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
     }
 
     @Override
+    public Page<PictureVO> getPictureVOPageWithCache(PictureQueryRequest pictureQueryRequest, HttpServletRequest request) {
+        long current = pictureQueryRequest.getCurrent();
+        long size = pictureQueryRequest.getPageSize();
+        // 限制爬虫
+        ThrowUtils.throwIf(size > 30, ErrorCode.PARAMS_ERROR);
+
+        // 构建缓存 key
+        String queryCondition = JSONUtil.toJsonStr(pictureQueryRequest);
+        String hashKey = DigestUtils.md5DigestAsHex(queryCondition.getBytes());
+        String cacheKey = CacheKeyConstant.CAFFEINE_CACHE_KEY_PREFIX + hashKey;
+        // 从本地缓存中查询
+        String cachedValue = caffeineCache.getIfPresent(cacheKey);
+        if (cachedValue != null) {
+            // 如果缓存命中，返回结果
+            return JSONUtil.toBean(cachedValue, Page.class);
+        }
+        // 构建 redis 缓存的 key
+        String redisKey = CacheKeyConstant.REDIS_CACHE_KEY_PREFIX + hashKey;
+        // 从缓存中获取数据
+        ValueOperations<String, String> opsForValue = stringRedisTemplate.opsForValue();
+        String cacheValue = opsForValue.get(redisKey);
+        if(cacheValue != null) {
+            // 如果缓存结果命中
+            // 将结果存入本地缓存
+            caffeineCache.put(cacheKey, cacheValue);
+            return JSONUtil.toBean(cacheValue, Page.class);
+        }
+
+        // 查询数据库
+        Page<Picture> picturePage = this.page(new Page<>(current, size),
+                this.getQueryWrapper(pictureQueryRequest));
+        // 获取封装类
+        Page<PictureVO> pictureVOPage = this.getPictureVOPage(picturePage, request);
+        // 存入本地缓存和 redis 缓存
+        cacheValue = JSONUtil.toJsonStr(pictureVOPage);
+        caffeineCache.put(cacheKey, cacheValue);
+        int cacheExpireTime = 300 + RandomUtil.randomInt(0, 300);
+        opsForValue.set(redisKey, JSONUtil.toJsonStr(pictureVOPage), cacheExpireTime, TimeUnit.SECONDS);
+        return pictureVOPage;
+    }
+
+    @Override
     public void doPictureReview(PictureReviewRequest pictureReviewRequest, User loginUser) {
         // 检验参数
         ThrowUtils.throwIf(pictureReviewRequest == null, ErrorCode.PARAMS_ERROR);
@@ -338,4 +399,24 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         return uploadCount;
     }
 
+    @Async
+    @Override
+    public void clearPictureFile(Picture oldPicture) {
+        // 判断该图片是否被多条记录使用
+        String pictureUrl = oldPicture.getUrl();
+        long count = this.lambdaQuery()
+                .eq(Picture::getUrl, pictureUrl)
+                .count();
+        // 有不止一条记录用到了该图片，不清理
+        if (count > 1) {
+            return;
+        }
+        // FIXME 注意，这里的 url 包含了域名，实际上只要传 key 值（存储路径）就够了
+        cosManager.deleteObject(oldPicture.getUrl());
+        // 清理缩略图
+        String thumbnailUrl = oldPicture.getThumbnailUrl();
+        if (StrUtil.isNotBlank(thumbnailUrl)) {
+            cosManager.deleteObject(thumbnailUrl);
+        }
+    }
 }

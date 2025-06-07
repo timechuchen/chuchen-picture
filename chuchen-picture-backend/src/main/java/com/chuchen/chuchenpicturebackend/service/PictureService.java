@@ -56,6 +56,8 @@ public interface PictureService extends IService<Picture> {
      */
     Page<PictureVO> getPictureVOPage(Page<Picture> picturePage, HttpServletRequest request);
 
+    Page<PictureVO> getPictureVOPageWithCache(PictureQueryRequest pictureQueryRequest, HttpServletRequest request);
+
     /**
      * 图片审核
      *
@@ -78,4 +80,10 @@ public interface PictureService extends IService<Picture> {
      * @return 成功的图片数量
      */
     Integer uploadPictureByBatch(PictureUploadByBatchRequest pictureUploadByBatchRequest, User loginUser);
+
+    /**
+     * 删除图片-这里指永久删除，而且也同时删除对象存储服务器中的数据
+     * @param oldPicture 删除图片的地址
+     */
+    void clearPictureFile(Picture oldPicture);
 }
