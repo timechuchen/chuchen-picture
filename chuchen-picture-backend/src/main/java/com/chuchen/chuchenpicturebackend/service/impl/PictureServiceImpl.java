@@ -10,7 +10,6 @@ import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.chuchen.chuchenpicturebackend.common.ResultUtils;
 import com.chuchen.chuchenpicturebackend.constant.CacheKeyConstant;
 import com.chuchen.chuchenpicturebackend.exception.BusinessException;
 import com.chuchen.chuchenpicturebackend.exception.ErrorCode;
@@ -33,8 +32,6 @@ import com.chuchen.chuchenpicturebackend.service.PictureService;
 import com.chuchen.chuchenpicturebackend.mapper.PictureMapper;
 import com.chuchen.chuchenpicturebackend.service.UserService;
 import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.qcloud.cos.COSClient;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -71,7 +68,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
     @Resource
     private UrlPictureUpload urlPictureUpload;
     @Resource
-    UserService userService;
+    private UserService userService;
     @Resource
     private StringRedisTemplate stringRedisTemplate;
     @Resource

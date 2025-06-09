@@ -83,7 +83,7 @@ public abstract class PictureUploadTemplate {
                 CIObject compressCiObject = objectList.get(0);
                 // 获取缩略图文件信息
                 CIObject thumbnailObject = compressCiObject;
-                if(objectList.size()> 1){
+                if(objectList.size() > 1){
                     thumbnailObject = objectList.get(1);
                 }
                 // 封装压缩后的返回结果

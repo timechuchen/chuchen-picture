@@ -53,9 +53,7 @@ public class UrlPictureUpload extends PictureUploadTemplate {
                 ErrorCode.PARAMS_ERROR, "仅支持 HTTP 或 HTTPS 协议的文件地址");
 
         // 3. 发送 HEAD 请求以验证文件是否存在
-        HttpResponse response = null;
-        try {
-            response = HttpUtil.createRequest(Method.HEAD, fileUrl).execute();
+        try (HttpResponse response = HttpUtil.createRequest(Method.HEAD, fileUrl).execute()) {
             // 未正常返回，无需执行其他判断
             if (response.getStatus() != HttpStatus.HTTP_OK) {
                 return;
@@ -78,10 +76,6 @@ public class UrlPictureUpload extends PictureUploadTemplate {
                 } catch (NumberFormatException e) {
                     throw new BusinessException(ErrorCode.PARAMS_ERROR, "文件大小格式错误");
                 }
-            }
-        } finally {
-            if (response != null) {
-                response.close();
             }
         }
     }
