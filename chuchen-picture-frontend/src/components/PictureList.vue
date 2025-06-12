@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="picture-list">
     <Waterfall :list="pictureList" :width="300" :breakpoints="breakpoints" :lazyload="true">
       <template #default="{ item, url, index }">
         <a-card hoverable @click="doClickPicture(item)" @dragstart="handleDragStart">
@@ -14,9 +14,11 @@
               @mouseenter="isMaskVisible[index] = true"
               @mouseleave="isMaskVisible[index] = false"
             >
-              <img :alt="item.name" :src="item.thumbnailUrl ??item.url " />
+              <img :alt="item.name" :src="item.thumbnailUrl ?? item.url" />
               <div class="mask-layer bottom-contain" :class="{ visible: isMaskVisible[index] }">
-                <span style="font-size: small; font-weight: 400; color: #adffff">{{ item.picWidth}} x {{ item.picHeight}}</span>
+                <span style="font-size: small; font-weight: 400; color: #adffff"
+                  >{{ item.picWidth }} x {{ item.picHeight }}</span
+                >
               </div>
             </div>
           </template>
@@ -32,6 +34,32 @@
               </a-flex>
             </template>
           </a-card-meta>
+          <template v-if="showOp" #actions>
+            <a-space @click="(e) => doEdit(item, e)">
+              <edit-outlined />
+              编辑
+            </a-space>
+            <a-space
+              @click="
+                (e) => {
+                  e.stopPropagation()
+                }
+              "
+            >
+              <delete-outlined />
+              <a-popconfirm
+                title="确定删除？"
+                @confirm="doDelete(item)"
+                @cancel="
+                  () => {
+                    message.info('取消删除')
+                  }
+                "
+              >
+                删除
+              </a-popconfirm>
+            </a-space>
+          </template>
         </a-card>
       </template>
     </Waterfall>
@@ -39,21 +67,28 @@
 </template>
 
 <script setup lang="ts">
-import { LazyImg, Waterfall } from 'vue-waterfall-plugin-next'
+import { Waterfall } from 'vue-waterfall-plugin-next'
 import 'vue-waterfall-plugin-next/dist/style.css'
 
 import { defineProps, ref } from 'vue'
 import { handleDragStart } from '@/utils'
+import { useRouter } from 'vue-router'
+import { EditOutlined, DeleteOutlined } from '@ant-design/icons-vue'
+import { deletePictureUsingPost } from '@/api/pictureController.ts'
+import { message } from 'ant-design-vue'
 
 interface Props {
-  pictureList: Array
-  doClickPicture: Function
+  pictureList: API.Picture[]
+  showOp?: boolean
+  onReload?: () => void
 }
-
-const props = defineProps<Props>()
 
 const isMaskVisible = ref<{ [key: number]: boolean }>({})
 
+const props = withDefaults(defineProps<Props>(), {
+  pictureList: () => [],
+  showOp: false,
+})
 /**
  * 瀑布流布局
  */
@@ -87,6 +122,41 @@ const breakpoints = ref({
     rowPerView: 1,
   },
 })
+
+// 跳转到图片详情页面
+const router = useRouter()
+const doClickPicture = (picture: API.PictureVO) => {
+  router.push({
+    path: `/picture/${picture.id}`,
+  })
+}
+
+const doEdit = (picture, e) => {
+  // 阻止冒泡
+  e.stopPropagation()
+  router.push({
+    path: 'add_picture',
+    query: {
+      id: picture.id,
+      spaceId: picture.spaceId,
+    },
+  })
+}
+
+const doDelete = async (picture) => {
+  const id = picture.id
+  if (!id) {
+    return
+  }
+  const res = await deletePictureUsingPost({ id })
+  if (res.data.code === 0) {
+    message.success('删除成功')
+    // 更新照片列表
+    props.onReload?.()
+  } else {
+    message.error('删除失败')
+  }
+}
 </script>
 
 <style scoped>
@@ -107,7 +177,11 @@ const breakpoints = ref({
   left: 0;
   width: 100%;
   height: 20%; /* Adjust height of the gradient strip */
-  background: linear-gradient(to top, rgba(128, 128, 128, 0.7), rgba(128, 128, 128, 0)); /* Gradient from gray to transparent */
+  background: linear-gradient(
+    to top,
+    rgba(128, 128, 128, 0.7),
+    rgba(128, 128, 128, 0)
+  ); /* Gradient from gray to transparent */
   opacity: 0;
   transition: opacity 0.3s ease;
   z-index: 1; /* Ensure mask is above the image */
@@ -122,8 +196,8 @@ const breakpoints = ref({
 }
 
 .bottom-contain {
-  display: grid;          /* 启用 Grid 布局 */
-  align-items: end;       /* 垂直对齐到底部 */
+  display: grid; /* 启用 Grid 布局 */
+  align-items: end; /* 垂直对齐到底部 */
   line-height: 1; /* 移除行高 */
 }
 

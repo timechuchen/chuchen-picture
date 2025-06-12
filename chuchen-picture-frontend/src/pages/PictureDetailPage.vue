@@ -4,10 +4,7 @@
       <!-- 图片展示区 -->
       <a-col :sm="24" :md="16" :xl="18">
         <a-card title="图片预览">
-          <a-image
-            style="max-height: 600px; object-fit: contain"
-            :src="picture.url"
-          />
+          <a-image style="max-height: 600px; object-fit: contain" :src="picture.url" />
         </a-card>
       </a-col>
       <!-- 图片信息区 -->
@@ -30,9 +27,7 @@
               {{ picture.category ?? '默认' }}
             </a-descriptions-item>
             <a-descriptions-item label="标签">
-              <div v-if="picture.tags">
-                -
-              </div>
+              <div v-if="picture.tags">-</div>
               <a-tag v-else v-for="tag in picture.tags" :key="tag">
                 {{ tag }}
               </a-tag>
@@ -62,7 +57,15 @@
               </template>
             </a-button>
             <div v-if="isAdmin">
-              <a-button danger @click="() => {open = true}">拒绝展示</a-button>
+              <a-button
+                danger
+                @click="
+                  () => {
+                    open = true
+                  }
+                "
+                >拒绝展示</a-button
+              >
               <a-modal :mask="false" v-model:open="open" title="拒绝原因" @ok="handleReview()">
                 <a-input v-model:value="inputReviewMessage" placeholder="请输入拒绝原因" />
               </a-modal>
@@ -77,12 +80,12 @@
               title="确定删除？"
               @confirm="doDelete"
               @cancel="
-              () => {
-                message.info('取消删除')
-              }
-            "
+                () => {
+                  message.info('取消删除')
+                }
+              "
             >
-              <a-button v-if="canEdit" danger @click="doDelete">
+              <a-button v-if="canEdit" danger>
                 删除
                 <template #icon>
                   <DeleteOutlined />
@@ -93,13 +96,17 @@
         </a-card>
       </a-col>
     </a-row>
-    <a-empty v-else description="不存在该照片"/>
+    <a-empty v-else description="不存在该照片" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { deletePictureUsingPost, doPictureReviewUsingPost, getPictureVoByIdUsingGet } from '@/api/pictureController.ts'
+import {
+  deletePictureUsingPost,
+  doPictureReviewUsingPost,
+  getPictureVoByIdUsingGet,
+} from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
 import { EditOutlined, DeleteOutlined, DownOutlined } from '@ant-design/icons-vue'
 import { downloadImage, formatSize } from '@/utils'
@@ -135,7 +142,7 @@ const isAdmin = ref<boolean>(false)
 const loginUserStore = useLoginUserStore()
 // 是否具有编辑权限
 const canEdit = computed(() => {
-  const loginUser = loginUserStore.loginUser;
+  const loginUser = loginUserStore.loginUser
   // 未登录不可编辑
   if (!loginUser.id) {
     return false
@@ -148,7 +155,14 @@ const canEdit = computed(() => {
 
 // 编辑
 const doEdit = () => {
-  router.push('/add_picture?id=' + picture.value.id)
+  // router.push('/add_picture?id=' + picture.value.id)
+  router.push({
+    path: '/add_picture',
+    query: {
+      id: picture.value.id,
+      spaceId: picture.value.spaceId,
+    },
+  })
 }
 // 删除
 const doDelete = async () => {
@@ -159,6 +173,7 @@ const doDelete = async () => {
   const res = await deletePictureUsingPost({ id })
   if (res.data.code === 0) {
     message.success('删除成功')
+    router.back()
   } else {
     message.error('删除失败')
   }
@@ -176,21 +191,22 @@ const handleReview = async () => {
   const res = await doPictureReviewUsingPost({
     id: picture.value.id,
     reviewStatus: PIC_REVIEW_STATUS_ENUM.REJECT,
-    reviewMessage: inputReviewMessage.value
+    reviewMessage: inputReviewMessage.value,
   })
   if (res.data.code === 0) {
     message.success('图片拒绝展示成功')
     // 跳转路由
-    router.push({
-      path: '/',
-      isReplace: true
-    }).then()
+    router
+      .push({
+        path: '/',
+        isReplace: true,
+      })
+      .then()
   } else {
     message.error('图片拒绝展示失败：' + res.data.message)
   }
   open.value = false
 }
-
 
 onMounted(() => {
   fetchPictureDetail()

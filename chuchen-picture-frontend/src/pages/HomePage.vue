@@ -28,10 +28,10 @@
         </a-checkable-tag>
       </a-space>
     </div>
-    <PictureHome
+    <!-- 图片列表 -->
+    <PictureList
       v-if="dataList.length > 0"
       :picture-list="dataList"
-      :do-click-picture="doClickPicture"
     />
   </div>
 </template>
@@ -39,10 +39,11 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import { listPictureVoByPageUsingPost } from '@/api/pictureController.ts'
-import { Empty, message } from 'ant-design-vue'
+import { message } from 'ant-design-vue'
 import { tagCategoryOptionsStore } from '@/stores/classification.ts'
 import { useRoute, useRouter } from 'vue-router'
-import PictureHome from '@/components/PictureHome.vue'
+import PictureList from '@/components/PictureList.vue'
+import router from '@/router'
 
 // 定义数据
 const loading = ref<boolean>(true)
@@ -74,7 +75,7 @@ const pagination = computed(() => {
 })
 
 const doSearch = () => {
-  router.push({ query: { category: selectedCategory.value } });
+  router.push({ query: { category: selectedCategory.value } })
   // 重置搜索条件
   searchParams.current = 1
   fetchData()
@@ -109,14 +110,6 @@ const fetchData = async () => {
     message.error('获取数据失败，' + res.data.message)
   }
   loading.value = false
-}
-
-// 跳转到图片详情页面
-const router = useRouter()
-const doClickPicture = (picture: API.PictureVO) => {
-  router.push({
-    path: `/picture/${picture.id}`,
-  })
 }
 
 // 页面加载的时候获取一次数据

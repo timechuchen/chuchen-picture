@@ -4,10 +4,12 @@
       <h2>图片管理</h2>
       <a-space>
         <a-button type="primary" href="/add_picture" target="_blank">+ 创建图片</a-button>
-        <a-button type="primary" href="/add_picture/batch" target="_blank" ghost>+ 批量创建图片</a-button>
+        <a-button type="primary" href="/add_picture/batch" target="_blank" ghost
+          >+ 批量创建图片</a-button
+        >
       </a-space>
     </a-flex>
-    <div style="margin-bottom: 16px"/>
+    <div style="margin-bottom: 16px" />
     <!-- 搜索栏 -->
     <a-form layout="inline" :model="searchParams" @finish="doSearch">
       <a-form-item label="关键词">
@@ -49,6 +51,7 @@
         <a-button type="primary" html-type="submit">搜索</a-button>
       </a-form-item>
     </a-form>
+    <div style="margin-bottom: 16px" />
     <!-- 表格 -->
     <a-table
       :columns="columns"
@@ -102,8 +105,22 @@
               >通过
             </a-button>
             <div v-if="record.reviewStatus !== PIC_REVIEW_STATUS_ENUM.REJECT">
-              <a-button type="link" danger @click="() => {open = true}">拒绝</a-button>
-              <a-modal :mask="false" v-model:open="open" title="拒绝原因" @ok="handleReview(record, PIC_REVIEW_STATUS_ENUM.REJECT)">
+              <a-button
+                type="link"
+                danger
+                @click="
+                  () => {
+                    open = true
+                  }
+                "
+                >拒绝</a-button
+              >
+              <a-modal
+                :mask="false"
+                v-model:open="open"
+                title="拒绝原因"
+                @ok="handleReview(record, PIC_REVIEW_STATUS_ENUM.REJECT)"
+              >
                 <a-input v-model:value="inputReviewMessage" placeholder="请输入拒绝原因" />
               </a-modal>
             </div>
@@ -225,7 +242,7 @@ const fetchData = async () => {
   if (!loading.value) {
     loading.value = true
   }
-  const res = await listPictureByPageUsingPost({ ...searchParams })
+  const res = await listPictureByPageUsingPost({ ...searchParams, nullSpaceId: true })
   if (res.data.code === 0 && res.data.data) {
     dataList.value = res.data.data.records ?? []
     total.value = res.data.data.total ?? 0
@@ -266,7 +283,8 @@ const tagOptions = ref<string[]>(tagCategoryOptions.tagOptions)
 
 const inputReviewMessage = ref<string>('审核拒绝')
 const handleReview = async (picture: API.Picture, reviewStatus: number) => {
-  const reviewMessage = reviewStatus === PIC_REVIEW_STATUS_ENUM.PASS ? '审核通过' : inputReviewMessage.value
+  const reviewMessage =
+    reviewStatus === PIC_REVIEW_STATUS_ENUM.PASS ? '审核通过' : inputReviewMessage.value
   const res = await doPictureReviewUsingPost({
     id: picture.id,
     reviewStatus,

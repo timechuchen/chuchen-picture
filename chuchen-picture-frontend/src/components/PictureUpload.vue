@@ -1,6 +1,11 @@
 <template>
   <div class="picture-upload">
-    <a-upload list-type="picture-card" :show-upload-list="false" :before-upload="beforeUpload" :custom-request="handleUpload">
+    <a-upload
+      list-type="picture-card"
+      :show-upload-list="false"
+      :before-upload="beforeUpload"
+      :custom-request="handleUpload"
+    >
       <img v-if="picture?.url" :src="picture?.url" alt="avatar" />
       <div v-else>
         <loading-outlined v-if="loading"></loading-outlined>
@@ -19,6 +24,7 @@ import { uploadPictureUsingPost } from '@/api/pictureController.ts'
 
 interface Props {
   picture?: API.PictureVO
+  spaceId?: number
   onSuccess?: (newPicture: API.PictureVO) => void
 }
 
@@ -32,19 +38,20 @@ const loading = ref<boolean>(false)
 const handleUpload = async ({ file }) => {
   loading.value = true
   try {
-    const params = props.picture? {id: props.picture.id} : {}
+    const params: API.PictureUploadRequest = props.picture ? { id: props.picture.id } : {}
+    params.spaceId = props.spaceId
     const res = await uploadPictureUsingPost(params, {}, file)
     if (res.data.code === 0 && res.data.data) {
       message.info('图片上传成功')
       // 将上传成功的信息传递给父组件
       props.onSuccess?.(res.data.data)
-    }else {
+    } else {
       message.error('图片上传失败：' + res.data.message)
     }
-  }catch (e) {
+  } catch (e) {
     console.error('图片上传失败：' + e)
     message.error('图片上传失败：' + e.message)
-  }finally {
+  } finally {
     loading.value = false
   }
 }

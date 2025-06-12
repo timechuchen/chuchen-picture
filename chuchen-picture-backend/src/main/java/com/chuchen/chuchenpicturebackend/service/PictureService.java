@@ -2,17 +2,14 @@ package com.chuchen.chuchenpicturebackend.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.chuchen.chuchenpicturebackend.model.dto.picture.PictureQueryRequest;
-import com.chuchen.chuchenpicturebackend.model.dto.picture.PictureReviewRequest;
-import com.chuchen.chuchenpicturebackend.model.dto.picture.PictureUploadByBatchRequest;
-import com.chuchen.chuchenpicturebackend.model.dto.picture.PictureUploadRequest;
+import com.chuchen.chuchenpicturebackend.model.dto.picture.*;
 import com.chuchen.chuchenpicturebackend.model.entity.Picture;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chuchen.chuchenpicturebackend.model.entity.User;
 import com.chuchen.chuchenpicturebackend.model.vo.PictureVO;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
 * @author chuchen
@@ -28,6 +25,13 @@ public interface PictureService extends IService<Picture> {
     void validPicture(Picture picture);
 
     /**
+     * 删除图片
+     * @param pictureId 图片id
+     * @param loginUser 当前用户
+     */
+    void deletePicture(long pictureId, User loginUser);
+
+    /**
      * 上传图片
      *
      * @param inputSource 要上传的图片输入源（本地文件或者 url 地址）
@@ -38,6 +42,13 @@ public interface PictureService extends IService<Picture> {
     PictureVO uploadPicture(Object inputSource,
                             PictureUploadRequest pictureUploadRequest,
                             User loginUser);
+
+    /**
+     * 编辑图片
+     * @param pictureEditRequest 图片编辑请求
+     * @param loginUser 当前登录用户
+     */
+    void editPicture(PictureEditRequest pictureEditRequest, User loginUser);
 
     /**
      * 获取查询对象
@@ -56,6 +67,9 @@ public interface PictureService extends IService<Picture> {
      */
     Page<PictureVO> getPictureVOPage(Page<Picture> picturePage, HttpServletRequest request);
 
+    /**
+     * 获取图片分页数据（带缓存）
+     */
     Page<PictureVO> getPictureVOPageWithCache(PictureQueryRequest pictureQueryRequest, HttpServletRequest request);
 
     /**
@@ -86,4 +100,13 @@ public interface PictureService extends IService<Picture> {
      * @param oldPicture 删除图片的地址
      */
     void clearPictureFile(Picture oldPicture);
+
+    /**
+     * 检验空间图片的权限
+     * @param loginUser 当前用户
+     * @param picture 图片
+     */
+    void checkPictureAuth(User loginUser, Picture picture);
+
+    List<Picture> getPictureListBySpaceId(long id);
 }

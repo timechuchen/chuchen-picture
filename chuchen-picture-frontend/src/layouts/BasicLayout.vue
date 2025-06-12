@@ -4,9 +4,12 @@
       <a-layout-header class="header">
         <GlobalHeader/>
       </a-layout-header>
-      <a-layout-content class="content">
-        <router-view />
-      </a-layout-content>
+      <a-layout>
+        <GlobalSidebar class="sidebar" />
+        <a-layout-content class="content">
+          <router-view />
+        </a-layout-content>
+      </a-layout>
       <a-layout-footer class="footer">
         <a href="https://github.com/timechuchen" target="_blank"> By Time 初晨</a>
       </a-layout-footer>
@@ -16,6 +19,7 @@
 
 <script setup lang="ts">
 import GlobalHeader from '@/components/GlobalHeader.vue'
+import GlobalSidebar from '@/components/GlobalSidebar.vue'
 </script>
 
 <style scoped>
@@ -41,4 +45,24 @@ import GlobalHeader from '@/components/GlobalHeader.vue'
   background: linear-gradient(to right, #efefef, #fff);
   margin-bottom: 28px;
 }
+
+#basicLayout .header {
+  margin-bottom: 1px;
+}
+
+#basicLayout .content {
+  padding: 28px;
+}
+
+#basicLayout .sidebar {
+  background: #fff;
+  padding-top: 20px;
+  border-right: 1px solid #eee;
+}
+
+#basicLayout :deep(.ant-menu-root) {
+  border-bottom: none !important;
+  border-inline-end: none !important;
+}
+
 </style>
