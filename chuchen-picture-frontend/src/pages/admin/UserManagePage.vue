@@ -1,5 +1,9 @@
 <template>
   <div id="userManagePage">
+    <a-flex justify="space-between">
+      <h2>用户管理</h2>
+    </a-flex>
+    <div style="margin-bottom: 16px" />
     <!-- 搜索栏 -->
     <a-form layout="inline" :model="searchParams" @finish="doSearch">
       <a-form-item label="账号">
@@ -12,6 +16,7 @@
         <a-button type="primary" html-type="submit">搜索</a-button>
       </a-form-item>
     </a-form>
+    <div style="margin-bottom: 16px" />
     <!-- 表格 -->
     <a-table
       :columns="columns"
