@@ -12,19 +12,20 @@
         >
           <a-progress
             type="circle"
-            :percent="((space.totalSize * 100) / space.maxSize).toFixed(1)"
+            :percent="Number(((space.totalSize * 100) / space.maxSize)?.toFixed(1))"
             :size="42"
           />
         </a-tooltip>
       </a-space>
     </a-flex>
+    <div style="margin-bottom: 16px" />
     <!-- 图片列表 -->
     <PictureList :picture-list="dataList" :show-op="true" :on-reload="fetchData" />
     <a-pagination
       style="text-align: right"
       v-model:current="searchParams.current"
       v-model:pageSize="searchParams.pageSize"
-      :total="total"
+      :total="Number(total)"
       :show-total="() => `图片总数 ${total} / ${space.maxCount}`"
       @change="onPageChange"
     />

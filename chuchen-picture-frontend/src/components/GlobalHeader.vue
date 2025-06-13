@@ -15,7 +15,7 @@
           mode="horizontal"
           :items="menus"
           @click="doMenuClick"
-          :disabled="disabled"
+          :disabled="menus.disabled"
         />
       </a-col>
       <!-- 用户信息展示栏 -->

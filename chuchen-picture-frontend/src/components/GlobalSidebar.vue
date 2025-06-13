@@ -38,7 +38,11 @@ const router = useRouter()
 const current = ref<string[]>([])
 // 监听路由变化，更新当前选中菜单
 router.afterEach((to, from, failure) => {
-  current.value = [to.path]
+  if (to.path.includes('space')) {
+    current.value = ['/my_space']
+  } else {
+    current.value = [to.path]
+  }
 })
 
 // 路由跳转事件
@@ -49,6 +53,4 @@ const doMenuClick = ({ key }: { key: string }) => {
 }
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

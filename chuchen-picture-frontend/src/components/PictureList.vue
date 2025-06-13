@@ -1,6 +1,6 @@
 <template>
   <div class="picture-list">
-    <Waterfall :list="pictureList" :width="300" :breakpoints="breakpoints" :lazyload="true">
+    <Waterfall :list="pictureList" :width="300" :breakpoints="breakpoints">
       <template #default="{ item, url, index }">
         <a-card hoverable @click="doClickPicture(item)" @dragstart="handleDragStart">
           <!-- @dragstart="handleDragStart" 禁止拖拽 -->
@@ -14,7 +14,15 @@
               @mouseenter="isMaskVisible[index] = true"
               @mouseleave="isMaskVisible[index] = false"
             >
-              <img :alt="item.name" :src="item.thumbnailUrl ?? item.url" />
+              <!-- 使用这个办法先解决首次加载过慢出现图片叠加问题 -->
+              <img
+                :alt="item.name"
+                :src="item.thumbnailUrl ?? item.url"
+                :width="item.picWidth"
+                :height="item.picHeight"
+                loading="lazy"
+              />
+<!--              <img :alt="item.name" :src="item.thumbnailUrl ?? item.url"/>-->
               <div class="mask-layer bottom-contain" :class="{ visible: isMaskVisible[index] }">
                 <span style="font-size: small; font-weight: 400; color: #adffff"
                   >{{ item.picWidth }} x {{ item.picHeight }}</span
@@ -135,7 +143,7 @@ const doEdit = (picture, e) => {
   // 阻止冒泡
   e.stopPropagation()
   router.push({
-    path: 'add_picture',
+    path: '/add_picture',
     query: {
       id: picture.id,
       spaceId: picture.spaceId,
