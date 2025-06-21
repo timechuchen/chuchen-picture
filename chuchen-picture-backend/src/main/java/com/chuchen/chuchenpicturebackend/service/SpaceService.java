@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chuchen.chuchenpicturebackend.model.dto.space.SpaceAddRequest;
 import com.chuchen.chuchenpicturebackend.model.dto.space.SpaceQueryRequest;
+import com.chuchen.chuchenpicturebackend.model.dto.space.analyze.SpaceAnalyzeRequest;
 import com.chuchen.chuchenpicturebackend.model.entity.Space;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chuchen.chuchenpicturebackend.model.entity.User;
@@ -55,4 +56,9 @@ public interface SpaceService extends IService<Space> {
      * @param space 空间
      */
     void fillSpaceBySpaceLevel(Space space);
+
+    /**
+     * 校验空间权限
+     */
+    void checkSpaceAuth(User loginUser, Space space);
 }

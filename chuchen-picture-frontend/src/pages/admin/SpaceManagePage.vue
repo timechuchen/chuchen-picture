@@ -4,6 +4,12 @@
       <h2>空间管理</h2>
       <a-space>
         <a-button type="primary" href="/add_space" target="_blank">+ 创建空间</a-button>
+        <a-button type="primary" ghost href="/space_analyze?queryPublic=1" target="_blank">
+          分析公共图库
+        </a-button>
+        <a-button type="primary" ghost href="/space_analyze?queryAll=1" target="_blank">
+          分析全空间
+        </a-button>
       </a-space>
     </a-flex>
     <div style="margin-bottom: 16px" />
@@ -56,6 +62,9 @@
         </template>
         <template v-else-if="column.key === 'action'">
           <a-space wrap>
+            <a-button type="link" :href="`/space_analyze?spaceId=${record.id}`" target="_blank">
+              分析
+            </a-button>
             <a-button type="link" :href="`/add_space?id=${record.id}`" target="_blank">
               编辑
             </a-button>
@@ -148,8 +157,8 @@ const fetchData = async () => {
   }
   const res = await listSpaceByPageUsingPost({ ...searchParams })
   if (res.data.code === 0 && res.data.data) {
-    dataList.value = res.data.data.records ?? []
-    total.value = res.data.data.total ?? 0
+    dataList.value = res.data?.data?.records ?? []
+    total.value = Number(res.data.data.total) ?? 0
   } else {
     message.error('获取数据失败：' + res.data.message)
   }

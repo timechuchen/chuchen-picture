@@ -35,9 +35,39 @@ declare namespace API {
     message?: string
   }
 
+  type BaseResponseListSpace_ = {
+    code?: number
+    data?: Space[]
+    message?: string
+  }
+
+  type BaseResponseListSpaceCategoryAnalyzeResponse_ = {
+    code?: number
+    data?: SpaceCategoryAnalyzeResponse[]
+    message?: string
+  }
+
   type BaseResponseListSpaceLevel_ = {
     code?: number
     data?: SpaceLevel[]
+    message?: string
+  }
+
+  type BaseResponseListSpaceSizeAnalyzeResponse_ = {
+    code?: number
+    data?: SpaceSizeAnalyzeResponse[]
+    message?: string
+  }
+
+  type BaseResponseListSpaceTagAnalyzeResponse_ = {
+    code?: number
+    data?: SpaceTagAnalyzeResponse[]
+    message?: string
+  }
+
+  type BaseResponseListSpaceUserAnalyzeResponse_ = {
+    code?: number
+    data?: SpaceUserAnalyzeResponse[]
     message?: string
   }
 
@@ -104,6 +134,12 @@ declare namespace API {
   type BaseResponseSpace_ = {
     code?: number
     data?: Space
+    message?: string
+  }
+
+  type BaseResponseSpaceUsageAnalyzeResponse_ = {
+    code?: number
+    data?: SpaceUsageAnalyzeResponse
     message?: string
   }
 
@@ -294,7 +330,7 @@ declare namespace API {
     reviewStatus?: number
     reviewTime?: string
     reviewerId?: number
-    spaceId?: number
+    spaceId?: number | string
     tags?: string
     thumbnailUrl?: string
     updateTime?: string
@@ -306,7 +342,7 @@ declare namespace API {
     category?: string
     nameRule?: string
     pictureIdList?: number[]
-    spaceId?: number
+    spaceId?: number | string
     tags?: string[]
   }
 
@@ -339,7 +375,7 @@ declare namespace API {
     searchText?: string
     sortField?: string
     sortOrder?: string
-    spaceId?: number
+    spaceId?: number | string
     startEditTime?: string
     tags?: string[]
     userId?: number
@@ -374,7 +410,7 @@ declare namespace API {
     fileUrl?: string
     id?: number
     picName?: string
-    spaceId?: number
+    spaceId?: number | string
   }
 
   type PictureVO = {
@@ -390,7 +426,7 @@ declare namespace API {
     picScale?: number
     picSize?: number
     picWidth?: number
-    spaceId?: number
+    spaceId?: number | string
     tags?: string[]
     thumbnailUrl?: string
     updateTime?: string
@@ -401,7 +437,7 @@ declare namespace API {
 
   type SearchPictureByColorRequest = {
     picColor?: string
-    spaceId?: number
+    spaceId?: number | string
   }
 
   type SearchPictureByPictureRequest = {
@@ -428,6 +464,18 @@ declare namespace API {
     spaceName?: string
   }
 
+  type SpaceCategoryAnalyzeRequest = {
+    queryAll?: boolean
+    queryPublic?: boolean
+    spaceId?: number | string
+  }
+
+  type SpaceCategoryAnalyzeResponse = {
+    category?: string
+    count?: number
+    totalSize?: number
+  }
+
   type SpaceEditRequest = {
     id?: number
     spaceName?: string
@@ -451,12 +499,66 @@ declare namespace API {
     userId?: number
   }
 
+  type SpaceRankAnalyzeRequest = {
+    topN?: number
+  }
+
+  type SpaceSizeAnalyzeRequest = {
+    queryAll?: boolean
+    queryPublic?: boolean
+    spaceId?: number | string
+  }
+
+  type SpaceSizeAnalyzeResponse = {
+    count?: number
+    sizeRange?: string
+  }
+
+  type SpaceTagAnalyzeRequest = {
+    queryAll?: boolean
+    queryPublic?: boolean
+    spaceId?: number | string
+  }
+
+  type SpaceTagAnalyzeResponse = {
+    count?: number
+    tag?: string
+  }
+
   type SpaceUpdateRequest = {
     id?: number
     maxCount?: number
     maxSize?: number
     spaceLevel?: number
     spaceName?: string
+  }
+
+  type SpaceUsageAnalyzeRequest = {
+    queryAll?: boolean
+    queryPublic?: boolean
+    spaceId?: number | string
+  }
+
+  type SpaceUsageAnalyzeResponse = {
+    countUsageRatio?: number
+    maxCount?: number
+    maxSize?: number
+    sizeUsageRatio?: number
+    usedCount?: number
+    usedSize?: number
+  }
+
+  type SpaceUserAnalyzeRequest = {
+    queryAll?: boolean
+    queryPublic?: boolean
+    spaceId?: number | string
+    timeDimension?: string
+    userId?: number
+  }
+
+  type SpaceUserAnalyzeResponse = {
+    count?: number
+    period?: string
   }
 
   type SpaceVO = {
@@ -489,7 +591,7 @@ declare namespace API {
     fileUrl?: string
     id?: number
     picName?: string
-    spaceId?: number
+    spaceId?: number | string
   }
 
   type User = {

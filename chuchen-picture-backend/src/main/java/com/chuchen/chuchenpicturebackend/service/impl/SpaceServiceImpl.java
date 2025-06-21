@@ -11,6 +11,7 @@ import com.chuchen.chuchenpicturebackend.exception.ErrorCode;
 import com.chuchen.chuchenpicturebackend.exception.ThrowUtils;
 import com.chuchen.chuchenpicturebackend.model.dto.space.SpaceAddRequest;
 import com.chuchen.chuchenpicturebackend.model.dto.space.SpaceQueryRequest;
+import com.chuchen.chuchenpicturebackend.model.dto.space.analyze.SpaceAnalyzeRequest;
 import com.chuchen.chuchenpicturebackend.model.entity.Picture;
 import com.chuchen.chuchenpicturebackend.model.entity.Space;
 import com.chuchen.chuchenpicturebackend.model.entity.User;
@@ -28,10 +29,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -193,6 +191,14 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
             if (space.getMaxCount() == null) {
                 space.setMaxCount(maxCount);
             }
+        }
+    }
+
+    @Override
+    public void checkSpaceAuth(User loginUser, Space space) {
+        // 仅本人或者管理员可编辑
+        if (!Objects.equals(loginUser.getId(), space.getUserId()) && !userService.isAdmin(loginUser)) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "无权限编辑该空间");
         }
     }
 }

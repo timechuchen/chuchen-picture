@@ -5,8 +5,8 @@
       <a-space>
         <a-button type="primary" href="/add_picture" target="_blank">+ 创建图片</a-button>
         <a-button type="primary" href="/add_picture/batch" target="_blank" ghost
-          >+ 批量创建图片</a-button
-        >
+          >+ 批量创建图片
+        </a-button>
       </a-space>
     </a-flex>
     <div style="margin-bottom: 16px" />
@@ -113,8 +113,8 @@
                     open = true
                   }
                 "
-                >拒绝</a-button
-              >
+                >拒绝
+              </a-button>
               <a-modal
                 :mask="false"
                 v-model:open="open"
@@ -122,6 +122,7 @@
                 @ok="handleReview(record, PIC_REVIEW_STATUS_ENUM.REJECT)"
               >
                 <a-input v-model:value="inputReviewMessage" placeholder="请输入拒绝原因" />
+                {{ record }}
               </a-modal>
             </div>
             <a-button type="link" :href="`/add_picture?id=${record.id}`" target="_blank"
