@@ -3,6 +3,8 @@ package com.chuchen.chuchenpicturebackend.controller;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chuchen.chuchenpicturebackend.annotation.AuthCheck;
+import com.chuchen.chuchenpicturebackend.api.imagesearch.ImageSearchApiFacade;
+import com.chuchen.chuchenpicturebackend.api.imagesearch.model.ImageSearchResult;
 import com.chuchen.chuchenpicturebackend.common.BaseResponse;
 import com.chuchen.chuchenpicturebackend.common.DeleteRequest;
 import com.chuchen.chuchenpicturebackend.common.ResultUtils;
@@ -225,8 +227,8 @@ public class PictureController {
     @GetMapping("/tag_category")
     public BaseResponse<PictureTagCategory> listPictureTagCategory() {
         PictureTagCategory pictureTagCategory = new PictureTagCategory();
-        List<String> tagList = Arrays.asList("热门", "搞笑", "生活", "高清", "艺术", "校园", "背景", "简历", "创意", "壁纸", "动漫", "风景", "动物", "人物", "游戏", "汽车", "美食", "旅行", "青春","超英", "其他");
-        List<String> categoryList = Arrays.asList("模板", "电商", "表情包", "素材", "海报", "壁纸", "人物","虚拟" , "其他");
+        List<String> tagList = Arrays.asList("青春", "4K高清", "横图", "竖图", "插画", "校园", "女神", "虚拟", "赛博朋克", "复古", "极简", "虚拟", "其他");
+        List<String> categoryList = Arrays.asList("热门", "人物", "动物", "食物", "建筑", "城市", "自然风光", "艺术与抽象", "其他" );
         pictureTagCategory.setTagList(tagList);
         pictureTagCategory.setCategoryList(categoryList);
         return ResultUtils.success(pictureTagCategory);
@@ -250,5 +252,39 @@ public class PictureController {
         User loginUser = userService.getLoginUser(request);
         Integer uploadCount = pictureService.uploadPictureByBatch(pictureUploadByBatchRequest, loginUser);
         return ResultUtils.success(uploadCount);
+    }
+
+    /**
+     * 以图搜图（暂时不可用）
+     */
+    @Deprecated
+    @PostMapping("/search/picture")
+    public BaseResponse<List<ImageSearchResult>> searchPictureByPicture(@RequestBody SearchPictureByPictureRequest searchPictureByPictureRequest) {
+        ThrowUtils.throwIf(searchPictureByPictureRequest == null, ErrorCode.PARAMS_ERROR);
+        Long pictureId = searchPictureByPictureRequest.getPictureId();
+        ThrowUtils.throwIf(pictureId == null || pictureId <= 0, ErrorCode.PARAMS_ERROR);
+        Picture oldPicture = pictureService.getById(pictureId);
+        ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR);
+        List<ImageSearchResult> resultList = ImageSearchApiFacade.searchImage(oldPicture.getUrl());
+        return ResultUtils.success(resultList);
+    }
+
+    @PostMapping("/search/color")
+    public BaseResponse<List<PictureVO>> searchPictureByColor(@RequestBody SearchPictureByColorRequest searchPictureByColorRequest, HttpServletRequest request) {
+        ThrowUtils.throwIf(searchPictureByColorRequest == null, ErrorCode.PARAMS_ERROR);
+        Long spaceId = searchPictureByColorRequest.getSpaceId();
+        String picColor = searchPictureByColorRequest.getPicColor();
+
+        List<PictureVO> pictureVOList = pictureService.searchPictureByColor(spaceId, picColor, userService.getLoginUser(request));
+        return ResultUtils.success(pictureVOList);
+    }
+
+    @PostMapping("/edit/batch")
+    public BaseResponse<Boolean> editPictureByBatch(@RequestBody PictureEditByBatchRequest pictureEditByBatchRequest,
+                                                 HttpServletRequest request) {
+        ThrowUtils.throwIf(pictureEditByBatchRequest == null, ErrorCode.PARAMS_ERROR);
+        User loginUser = userService.getLoginUser(request);
+        pictureService.editPictureByBatch(pictureEditByBatchRequest, loginUser);
+        return ResultUtils.success(true);
     }
 }

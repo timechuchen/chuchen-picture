@@ -47,6 +47,19 @@
             <a-descriptions-item label="大小">
               {{ formatSize(picture.picSize) }}
             </a-descriptions-item>
+            <a-descriptions-item label="主色调">
+              <a-space>
+                {{ picture.picColor ?? '-' }}
+                <div
+                  v-if="picture.picColor"
+                  :style="{
+                    width: '16px',
+                    height: '16px',
+                    backgroundColor: toHexColor(picture.picColor),
+                  }"
+                />
+              </a-space>
+            </a-descriptions-item>
           </a-descriptions>
           <!-- 图片操作 -->
           <a-space wrap>
@@ -64,12 +77,15 @@
                     open = true
                   }
                 "
-                >拒绝展示</a-button
-              >
+                >拒绝展示
+              </a-button>
               <a-modal :mask="false" v-model:open="open" title="拒绝原因" @ok="handleReview()">
                 <a-input v-model:value="inputReviewMessage" placeholder="请输入拒绝原因" />
               </a-modal>
             </div>
+            <a-button type="primary"  @click="doShare" :icon="h(ShareAltOutlined)">
+              分享
+            </a-button>
             <a-button v-if="canEdit" type="default" @click="doEdit">
               编辑
               <template #icon>
@@ -97,22 +113,24 @@
       </a-col>
     </a-row>
     <a-empty v-else description="不存在该照片" />
+    <ShareModel ref="shareModalRef" :link="shareLink" :title="'分享'"/>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, h, onMounted, ref } from 'vue'
 import {
   deletePictureUsingPost,
   doPictureReviewUsingPost,
   getPictureVoByIdUsingGet,
 } from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
-import { EditOutlined, DeleteOutlined, DownOutlined } from '@ant-design/icons-vue'
-import { downloadImage, formatSize } from '@/utils'
+import { EditOutlined, DeleteOutlined, DownOutlined, ShareAltOutlined } from '@ant-design/icons-vue'
+import { downloadImage, formatSize, toHexColor } from '@/utils'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import router from '@/router'
 import { PIC_REVIEW_STATUS_ENUM } from '@/constants/picture.ts'
+import ShareModel from '@/components/ShareModal.vue'
 
 const props = defineProps<{
   id: string | number
@@ -206,6 +224,18 @@ const handleReview = async () => {
     message.error('图片拒绝展示失败：' + res.data.message)
   }
   open.value = false
+}
+
+// 分享弹窗引用
+const shareModalRef = ref()
+// 分享链接
+const shareLink = ref<string>()
+// 分享
+const doShare = () => {
+  shareLink.value = `${window.location.protocol}//${window.location.host}/picture/${picture.value.id}`
+  if (shareModalRef.value) {
+    shareModalRef.value.openModal()
+  }
 }
 
 onMounted(() => {

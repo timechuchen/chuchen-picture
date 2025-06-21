@@ -87,7 +87,7 @@ public abstract class PictureUploadTemplate {
                     thumbnailObject = objectList.get(1);
                 }
                 // 封装压缩后的返回结果
-                return buildResult(originalFilename, compressCiObject, thumbnailObject);
+                return buildResult(originalFilename, compressCiObject, thumbnailObject, imageInfo);
             }
             // 封装返回结果
             return buildResult(imageInfo, originalFilename, file, uploadPath);
@@ -104,9 +104,10 @@ public abstract class PictureUploadTemplate {
      * @param originalFilename 原始文件名
      * @param compressCiObject 压缩之后的文件信息
      * @param thumbnailObject 缩略图文件信息
+     * @param imageInfo 图片信息
      * @return 压缩后的结果
      */
-    private UploadPictureResult buildResult(String originalFilename, CIObject compressCiObject, CIObject thumbnailObject) {
+    private UploadPictureResult buildResult(String originalFilename, CIObject compressCiObject, CIObject thumbnailObject, ImageInfo imageInfo) {
         // 封装返回结果
         UploadPictureResult uploadPictureResult = new UploadPictureResult();
         int picWidth = compressCiObject.getWidth();
@@ -117,6 +118,7 @@ public abstract class PictureUploadTemplate {
         uploadPictureResult.setPicHeight(picHeight);
         uploadPictureResult.setPicScale(picScale);
         uploadPictureResult.setPicFormat(compressCiObject.getFormat());
+        uploadPictureResult.setPicColor(imageInfo.getAve());
         uploadPictureResult.setPicSize(compressCiObject.getSize().longValue());
         // 设置压缩后的原图地址
         uploadPictureResult.setUrl(cosClientConfig.getHost() + "/" + compressCiObject.getKey());
@@ -144,6 +146,7 @@ public abstract class PictureUploadTemplate {
         uploadPictureResult.setPicHeight(picHeight);
         uploadPictureResult.setPicScale(picScale);
         uploadPictureResult.setPicFormat(imageInfo.getFormat());
+        uploadPictureResult.setPicColor(imageInfo.getAve());
         uploadPictureResult.setPicSize(FileUtil.size(file));
         uploadPictureResult.setUrl(cosClientConfig.getHost() + "/" + uploadPath);
         return uploadPictureResult;

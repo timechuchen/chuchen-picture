@@ -22,7 +22,7 @@
                 :height="item.picHeight"
                 loading="lazy"
               />
-<!--              <img :alt="item.name" :src="item.thumbnailUrl ?? item.url"/>-->
+              <!--              <img :alt="item.name" :src="item.thumbnailUrl ?? item.url"/>-->
               <div class="mask-layer bottom-contain" :class="{ visible: isMaskVisible[index] }">
                 <span style="font-size: small; font-weight: 400; color: #adffff"
                   >{{ item.picWidth }} x {{ item.picHeight }}</span
@@ -43,34 +43,53 @@
             </template>
           </a-card-meta>
           <template v-if="showOp" #actions>
-            <a-space @click="(e) => doEdit(item, e)">
-              <edit-outlined />
-              编辑
-            </a-space>
-            <a-space
-              @click="
+            <a-tooltip placement="top">
+              <template #title>
+                <span>分享</span>
+              </template>
+              <share-alt-outlined @click="(e) => doShare(item, e)" />
+            </a-tooltip>
+            <a-tooltip placement="top">
+              <template #title>
+                <span>搜索类似图片</span>
+              </template>
+              <search-outlined @click="(e) => doSearch(item, e)" />
+            </a-tooltip>
+            <a-tooltip placement="top">
+              <template #title>
+                <span>编辑</span>
+              </template>
+              <edit-outlined @click="(e) => doEdit(item, e)" />
+            </a-tooltip>
+            <a-tooltip placement="top">
+              <template #title>
+                <span>删除</span>
+              </template>
+              <a-space
+                @click="
                 (e) => {
                   e.stopPropagation()
                 }
               "
-            >
-              <delete-outlined />
-              <a-popconfirm
-                title="确定删除？"
-                @confirm="doDelete(item)"
-                @cancel="
+              >
+                <a-popconfirm
+                  title="确定删除？"
+                  @confirm="doDelete(item)"
+                  @cancel="
                   () => {
                     message.info('取消删除')
                   }
                 "
-              >
-                删除
-              </a-popconfirm>
-            </a-space>
+                >
+                  <delete-outlined />
+                </a-popconfirm>
+              </a-space>
+            </a-tooltip>
           </template>
         </a-card>
       </template>
     </Waterfall>
+    <ShareModal ref="shareModalRef" :link="shareLink" :title="'分享'"/>
   </div>
 </template>
 
@@ -81,9 +100,15 @@ import 'vue-waterfall-plugin-next/dist/style.css'
 import { defineProps, ref } from 'vue'
 import { handleDragStart } from '@/utils'
 import { useRouter } from 'vue-router'
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons-vue'
+import {
+  EditOutlined,
+  DeleteOutlined,
+  SearchOutlined,
+  ShareAltOutlined,
+} from '@ant-design/icons-vue'
 import { deletePictureUsingPost } from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
+import ShareModal from '@/components/ShareModal.vue'
 
 interface Props {
   pictureList: API.Picture[]
@@ -149,6 +174,28 @@ const doEdit = (picture, e) => {
       spaceId: picture.spaceId,
     },
   })
+}
+
+const doSearch = (picture, e) => {
+  // 阻止冒泡
+  e.stopPropagation()
+  // 打开新的页面
+  // window.open(`/search_picture?pictureId=${picture.id}`)
+
+  message.warn('该功能暂时关闭')
+}
+
+// 分享弹窗引用
+const shareModalRef = ref()
+// 分享链接
+const shareLink = ref<string>()
+// 分享
+const doShare = (picture: API.PictureVO, e: Event) => {
+  e.stopPropagation()
+  shareLink.value = `${window.location.protocol}//${window.location.host}/picture/${picture.id}`
+  if (shareModalRef.value) {
+    shareModalRef.value.openModal()
+  }
 }
 
 const doDelete = async (picture) => {

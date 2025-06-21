@@ -108,5 +108,26 @@ public interface PictureService extends IService<Picture> {
      */
     void checkPictureAuth(User loginUser, Picture picture);
 
+    /**
+     * 获取空间图片列表
+     * @param id 空间id
+     * @return 图片列表
+     */
     List<Picture> getPictureListBySpaceId(long id);
+
+    /**
+     * 搜索图片-根据色调搜索指定空间的照片
+     * @param spaceId 空间id
+     * @param color 颜色
+     * @param loginUser 当前用户
+     * @return 图片列表
+     */
+    List<PictureVO> searchPictureByColor(Long spaceId, String color, User loginUser);
+
+    /**
+     * 批量编辑图片
+     * @param pictureEditByBatchRequest 图片批量编辑请求
+     * @param loginUser 当前用户
+     */
+    void editPictureByBatch(PictureEditByBatchRequest pictureEditByBatchRequest, User loginUser);
 }
