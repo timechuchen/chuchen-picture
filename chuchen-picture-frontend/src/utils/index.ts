@@ -39,7 +39,7 @@ export function handleDragStart(event) {
  * @param input
  */
 export function toHexColor(input) {
-  if(!input) {
+  if (!input) {
     return '#fff'
   }
   // 去掉 0x 前缀

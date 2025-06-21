@@ -15,6 +15,27 @@
         <UrlPictureUpload :space-id="spaceId" :picture="picture" :onSuccess="onSuccess" />
       </a-tab-pane>
     </a-tabs>
+    <!-- 图片编辑区域 -->
+    <div v-if="picture" class="edit-bar">
+      <a-space size="middle">
+        <a-button :icon="h(EditOutlined)" @click="doEditPicture">编辑图片</a-button>
+        <a-button type="primary" :icon="h(FullscreenOutlined)" @click="doPaintingPicture">
+          AI 扩图
+        </a-button>
+      </a-space>
+      <ImageCropper
+        ref="imageCropperRef"
+        :imageUrl="picture?.url"
+        :picture="picture"
+        :on-success="onCropSuccess"
+        :space-id="spaceId"
+      />
+      <ImageOutPainting
+        ref="imageOutPainting"
+        :picture="picture"
+        :on-success="onImagePaintingSuccess"
+      />
+    </div>
     <!-- 图片信息表单 -->
     <a-form
       v-if="picture"
@@ -62,12 +83,15 @@
 
 <script setup lang="ts">
 import PictureUpload from '@/components/PictureUpload.vue'
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, h, onMounted, reactive, ref } from 'vue'
 import { editPictureUsingPost, getPictureVoByIdUsingGet } from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
 import { useRoute, useRouter } from 'vue-router'
 import { tagCategoryOptionsStore } from '@/stores/classification.ts'
 import UrlPictureUpload from '@/components/UrlPictureUpload.vue'
+import ImageCropper from '@/components/ImageCropper.vue'
+import { EditOutlined, FullscreenOutlined } from '@ant-design/icons-vue'
+import ImageOutPainting from '@/components/ImageOutPainting.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -136,6 +160,25 @@ const getOldPicture = async () => {
   }
 }
 
+// 图片编辑应用
+const imageCropperRef = ref()
+const doEditPicture = async () => {
+  imageCropperRef.value?.openModal()
+}
+// 裁剪成功
+const onCropSuccess = (newPicture: API.PictureVO) => {
+  picture.value = newPicture
+}
+
+// AI 拓图
+const imageOutPainting = ref()
+const doPaintingPicture = async () => {
+  imageOutPainting.value?.openModal()
+}
+const onImagePaintingSuccess = (newPicture: API.PictureVO) => {
+  picture.value = newPicture
+}
+
 onMounted(() => {
   getOldPicture()
 })
@@ -145,5 +188,10 @@ onMounted(() => {
 #addPicturePage {
   max-width: 720px;
   margin: 0 auto;
+}
+
+#addPicturePage .edit-bar {
+  text-align: center;
+  margin: 16px 0;
 }
 </style>

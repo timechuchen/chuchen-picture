@@ -92,9 +92,9 @@ const originMenus = [
     title: '空间管理',
   },
   {
-    key: 'others',
-    label: h('a', { href: 'https://github.com/timechuchen', target: '_blank' }, '学习编程'),
-    title: '学习编程',
+    key: '/about',
+    label: '关于我们',
+    title: '关于',
     disabled: true,
   },
 ]

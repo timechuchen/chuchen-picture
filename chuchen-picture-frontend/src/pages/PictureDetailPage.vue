@@ -27,7 +27,7 @@
               {{ picture.category ?? '默认' }}
             </a-descriptions-item>
             <a-descriptions-item label="标签">
-              <div v-if="picture.tags">-</div>
+              <div v-if="!picture.tags">-</div>
               <a-tag v-else v-for="tag in picture.tags" :key="tag">
                 {{ tag }}
               </a-tag>
