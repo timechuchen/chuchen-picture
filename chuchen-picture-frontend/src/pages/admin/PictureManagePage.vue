@@ -59,7 +59,7 @@
       :loading="loading"
       :pagination="pagination"
       @change="doTableChange"
-      scroll=""
+      :scroll="{ x: 400 }"
     >
       <template #bodyCell="{ column, record }">
         <template v-if="column.dataIndex === 'url'">
@@ -108,22 +108,9 @@
               <a-button
                 type="link"
                 danger
-                @click="
-                  () => {
-                    open = true
-                  }
-                "
-                >拒绝
+                @click="openRejectModal(record)"
+              >拒绝
               </a-button>
-              <a-modal
-                :mask="false"
-                v-model:open="open"
-                title="拒绝原因"
-                @ok="handleReview(record, PIC_REVIEW_STATUS_ENUM.REJECT)"
-              >
-                <a-input v-model:value="inputReviewMessage" placeholder="请输入拒绝原因" />
-                {{ record }}
-              </a-modal>
             </div>
             <a-button type="link" :href="`/add_picture?id=${record.id}`" target="_blank"
               >编辑
@@ -144,6 +131,14 @@
       </template>
     </a-table>
   </div>
+  <a-modal
+    :mask="false"
+    v-model:open="open"
+    title="拒绝原因"
+    @ok="handleRejectConfirm"
+  >
+    <a-input v-model:value="inputReviewMessage" placeholder="请输入拒绝原因" />
+  </a-modal>
 </template>
 <script lang="ts" setup>
 import { computed, onMounted, reactive, ref } from 'vue'
@@ -283,6 +278,25 @@ const categoryOptions = ref<string[]>(tagCategoryOptions.categoryOptions)
 const tagOptions = ref<string[]>(tagCategoryOptions.tagOptions)
 
 const inputReviewMessage = ref<string>('审核拒绝')
+// 添加一个变量来保存当前正在操作的record
+const currentRecord = ref<API.Picture | null>(null)
+
+// 打开拒绝Modal的方法
+const openRejectModal = (record: API.Picture) => {
+  currentRecord.value = record // 保存当前操作的record
+  open.value = true
+}
+
+// 处理拒绝确认
+const handleRejectConfirm = async () => {
+  if (!currentRecord.value) return
+
+  await handleReview(
+    currentRecord.value,
+    PIC_REVIEW_STATUS_ENUM.REJECT
+  )
+}
+
 const handleReview = async (picture: API.Picture, reviewStatus: number) => {
   const reviewMessage =
     reviewStatus === PIC_REVIEW_STATUS_ENUM.PASS ? '审核通过' : inputReviewMessage.value
@@ -299,6 +313,10 @@ const handleReview = async (picture: API.Picture, reviewStatus: number) => {
     message.error('审核操作失败：' + res.data.message)
   }
   open.value = false
+  // 操作完成后清空当前record
+  if (reviewStatus === PIC_REVIEW_STATUS_ENUM.REJECT) {
+    currentRecord.value = null
+  }
 }
 
 // 页面加载的时候获取一次数据

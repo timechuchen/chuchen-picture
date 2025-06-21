@@ -42,7 +42,7 @@
       :loading="loading"
       :pagination="pagination"
       @change="doTableChange"
-      scroll=""
+      :scroll="{ x: 400 }"
     >
       <template #bodyCell="{ column, record }">
         <!-- 空间级别 -->
