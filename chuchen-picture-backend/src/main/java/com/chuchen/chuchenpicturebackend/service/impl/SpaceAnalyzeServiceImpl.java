@@ -36,9 +36,9 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space>
     @Resource
     private UserService userService;
     @Resource
-    SpaceService spaceService;
+    private SpaceService spaceService;
     @Resource
-    PictureService pictureService;
+    private PictureService pictureService;
 
     /**
      * 获取空间使用分析数据
