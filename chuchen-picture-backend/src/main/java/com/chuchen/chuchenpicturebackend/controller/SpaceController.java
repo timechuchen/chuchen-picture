@@ -9,6 +9,7 @@ import com.chuchen.chuchenpicturebackend.constant.UserConstant;
 import com.chuchen.chuchenpicturebackend.exception.BusinessException;
 import com.chuchen.chuchenpicturebackend.exception.ErrorCode;
 import com.chuchen.chuchenpicturebackend.exception.ThrowUtils;
+import com.chuchen.chuchenpicturebackend.manager.auth.SpaceUserAuthManager;
 import com.chuchen.chuchenpicturebackend.model.dto.space.*;
 import com.chuchen.chuchenpicturebackend.model.entity.Picture;
 import com.chuchen.chuchenpicturebackend.model.entity.Space;
@@ -43,6 +44,8 @@ public class SpaceController {
     private SpaceService spaceService;
     @Resource
     private PictureService pictureService;
+    @Resource
+    private SpaceUserAuthManager spaceUserAuthManager;
 
     /**
      * 创建空间
@@ -131,8 +134,11 @@ public class SpaceController {
         // 查询数据库
         Space space = spaceService.getById(id);
         ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR);
+        SpaceVO spaceVO = spaceService.getSpaceVO(space, request);
+        List<String> permissionList = spaceUserAuthManager.getPermissionList(space, userService.getLoginUser(request));
+        spaceVO.setPermissionList(permissionList);
         // 获取封装类
-        return ResultUtils.success(spaceService.getSpaceVO(space, request));
+        return ResultUtils.success(spaceVO);
     }
 
     /**

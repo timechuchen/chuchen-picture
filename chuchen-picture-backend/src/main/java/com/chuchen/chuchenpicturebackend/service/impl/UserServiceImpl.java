@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chuchen.chuchenpicturebackend.exception.BusinessException;
 import com.chuchen.chuchenpicturebackend.exception.ErrorCode;
+import com.chuchen.chuchenpicturebackend.manager.auth.StpKit;
 import com.chuchen.chuchenpicturebackend.model.dto.user.UserQueryRequest;
 import com.chuchen.chuchenpicturebackend.model.entity.User;
 import com.chuchen.chuchenpicturebackend.model.enums.UserRoleEnum;
@@ -101,6 +102,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
         // 保存用户的登录状态
         request.getSession().setAttribute(USER_LOGIN_STATE, user);
+        /*
+          保存 sa-token 的空间登陆信息，这里之前写的保存在 tomcat-redis-session(spring-session) 中的先不进行删除，
+          相当于这里将登陆态信息保存在了两个地方，后期可以统一使用 sa-token 的方式保存
+         */
+        StpKit.SPACE.login(user.getId());
+        StpKit.SPACE.getSession().set(USER_LOGIN_STATE, user);
         return this.getLoginUserVO(user);
     }
 
