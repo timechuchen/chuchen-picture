@@ -69,7 +69,7 @@
                 <DownOutlined />
               </template>
             </a-button>
-            <div v-if="isAdmin">
+            <div v-if="canEdit">
               <a-button
                 danger
                 @click="
@@ -93,6 +93,7 @@
               </template>
             </a-button>
             <a-popconfirm
+              v-if="canDelete"
               title="确定删除？"
               @confirm="doDelete"
               @cancel="
@@ -127,10 +128,10 @@ import {
 import { message } from 'ant-design-vue'
 import { EditOutlined, DeleteOutlined, DownOutlined, ShareAltOutlined } from '@ant-design/icons-vue'
 import { downloadImage, formatSize, toHexColor } from '@/utils'
-import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import router from '@/router'
 import { PIC_REVIEW_STATUS_ENUM } from '@/constants/picture.ts'
 import ShareModel from '@/components/ShareModal.vue'
+import { SPACE_PERMISSION_ENUM } from '@/constants/space.ts'
 
 const props = defineProps<{
   id: string | number
@@ -138,6 +139,17 @@ const props = defineProps<{
 const isPicture = ref<boolean>(false)
 
 const picture = ref<API.PictureVO>({})
+
+// 通用权限检查函数
+function createPermissionChecker(permission: string) {
+  return computed(() => {
+    return (picture.value.permissionList ?? []).includes(permission)
+  })
+}
+
+// 定义权限检查
+const canEdit = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_EDIT)
+const canDelete = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_DELETE)
 
 // 获取图片详情
 const fetchPictureDetail = async () => {
@@ -155,21 +167,6 @@ const fetchPictureDetail = async () => {
     message.error('获取图片详情失败：' + e.message)
   }
 }
-
-const isAdmin = ref<boolean>(false)
-const loginUserStore = useLoginUserStore()
-// 是否具有编辑权限
-const canEdit = computed(() => {
-  const loginUser = loginUserStore.loginUser
-  // 未登录不可编辑
-  if (!loginUser.id) {
-    return false
-  }
-  isAdmin.value = loginUser.userRole === 'admin'
-  // 仅本人或管理员可编辑
-  const user = picture.value.user || {}
-  return loginUser.id === user.id || loginUser.userRole === 'admin'
-})
 
 // 编辑
 const doEdit = () => {

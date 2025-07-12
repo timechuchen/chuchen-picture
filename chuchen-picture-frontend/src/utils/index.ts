@@ -1,6 +1,16 @@
 import { saveAs } from 'file-saver'
 
 /**
+ * 判断数组中是否包含某个字符串
+ * @param array
+ * @param key
+ * @param str
+ */
+export const containsString = (array, key, str) => {
+  return array.some(item => item[key]?.includes(str));
+}
+
+/**
  * 格式化文件大小
  * @param size
  */

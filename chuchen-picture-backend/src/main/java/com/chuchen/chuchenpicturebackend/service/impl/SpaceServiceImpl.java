@@ -48,6 +48,9 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
     private SpaceUserService spaceUserService;
     @Resource
     private TransactionTemplate transactionTemplate;
+//    @Resource
+//    @Lazy
+//    private DynamicShardingManager dynamicShardingManager;
 
     private final Map<Long, Object> lockMap = new ConcurrentHashMap<>();
 
@@ -98,6 +101,8 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
                     result = spaceUserService.save(spaceUser);
                     ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR, "创建团队成员记录失败");
                 }
+                // 创建分表（仅对团队空间生效） 暂时先不使用分表
+//                dynamicShardingManager.createSpacePictureTable(space);
                 // 返回新写入的数据 id
                 return space.getId();
             });

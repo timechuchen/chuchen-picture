@@ -55,13 +55,13 @@
               </template>
               <search-outlined @click="(e) => doSearch(item, e)" />
             </a-tooltip>
-            <a-tooltip placement="top">
+            <a-tooltip placement="top" v-if="canEdit">
               <template #title>
                 <span>编辑</span>
               </template>
               <edit-outlined @click="(e) => doEdit(item, e)" />
             </a-tooltip>
-            <a-tooltip placement="top">
+            <a-tooltip placement="top" v-if="canDelete">
               <template #title>
                 <span>删除</span>
               </template>
@@ -114,14 +114,19 @@ interface Props {
   pictureList: API.Picture[]
   showOp?: boolean
   onReload?: () => void
+  canEdit?: boolean
+  canDelete?: boolean
 }
-
-const isMaskVisible = ref<{ [key: number]: boolean }>({})
 
 const props = withDefaults(defineProps<Props>(), {
   pictureList: () => [],
   showOp: false,
+  canEdit: false,
+  canDelete: false,
 })
+
+const isMaskVisible = ref<{ [key: number]: boolean }>({})
+
 /**
  * 瀑布流布局
  */

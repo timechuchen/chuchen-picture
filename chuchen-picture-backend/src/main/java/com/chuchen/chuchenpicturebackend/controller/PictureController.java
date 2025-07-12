@@ -206,7 +206,7 @@ public class PictureController {
         }else {
             // 私有空间
             boolean hasPermission = StpKit.SPACE.hasPermission(SpaceUserPermissionConstant.PICTURE_VIEW);
-            ThrowUtils.throwIf(hasPermission, ErrorCode.NO_AUTH_ERROR);
+            ThrowUtils.throwIf(!hasPermission, ErrorCode.NO_AUTH_ERROR);
 //            User loginUser = userService.getLoginUser(request);
 //            Space space = spaceService.getById(spaceId);
 //            ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR, "空间不存在");
